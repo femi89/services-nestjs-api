@@ -1,22 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(@InjectRepository(UserEntity) private repo: Repository<UserEntity>) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const userEntity = new User();
-    userEntity.password = createUserDto.password;
+  async create(createUserDto: any) {
+    const userEntity = new UserEntity();
+    const hash = await bcrypt.hash(createUserDto.password, 10);
+    userEntity.password = hash;
     userEntity.firstName = createUserDto.firstName;
     userEntity.email = createUserDto.email;
     userEntity.lastName = createUserDto.lastName;
+    const user = await this.findUserWithField(createUserDto.email);
+    if (user) {
+      throw new BadRequestException('Email already in use');
+    }
     this.repo.create(userEntity);
-    return this.repo.save(userEntity);
+    await this.repo.save(userEntity);
+    return 'Account Created Successfully';
   }
 
   async findAll() {
@@ -43,5 +49,13 @@ export class UserService {
     return this.repo.findOne({
       where: { email: email },
     });
+  }
+
+  async getUser(username: string) {
+    return await this.repo.findOneBy({ email: username });
+  }
+
+  async getProfile() {
+
   }
 }

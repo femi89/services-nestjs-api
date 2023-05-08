@@ -5,8 +5,12 @@ import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Entities } from "./constants/entities";
 import { UserModule } from './user/user.module';
-import { JwtModule, JwtService } from "@nestjs/jwt";
-
+import { APP_GUARD } from "@nestjs/core";
+import { AuthGuardGuard } from "./guards/auth-guard/auth-guard.guard";
+import * as dotenv from 'dotenv';
+import { JwtService } from "@nestjs/jwt";
+import { ServicesModule } from './services/services.module';
+dotenv.config();
 @Module({
   imports: [
     AuthModule,
@@ -19,12 +23,19 @@ import { JwtModule, JwtService } from "@nestjs/jwt";
       database: 'pnp',
       entities: Entities,
       synchronize: true,
-      autoLoadEntities: true,
+      autoLoadEntities: true
     }),
     UserModule,
-    JwtModule,
+    ServicesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtService],
+  providers: [
+    JwtService,
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuardGuard,
+    },
+  ],
 })
 export class AppModule {}

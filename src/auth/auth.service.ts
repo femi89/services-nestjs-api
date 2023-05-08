@@ -1,26 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { LoginDto } from './dto/login.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, NotAcceptableException, UnauthorizedException } from "@nestjs/common";
+import { Strategy } from 'passport-local';
+import { PassportStrategy } from '@nestjs/passport';
+import { UserService } from '../user/user.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
-export class AuthService {
-  create(createAuthDto: LoginDto) {
-    return 'This action adds a new auth';
+export class AuthService extends PassportStrategy(Strategy) {
+  constructor(private usersService: UserService) {
+    super();
   }
-
-  findAll() {
-    return `This action returns all auth`;
+  async validate(username: string, password: string): Promise<any> {
+    const user = await this.validateUser(username, password);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
-
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async validateUser(username: string, password: string): Promise<any> {
+    const user = await this.usersService.getUser(username);
+    if (!user) return null;
+    const passwordValid = await bcrypt.compare(password, user.password);
+    if (!user) {
+      throw new NotAcceptableException('could not find the user');
+    }
+    if (user && passwordValid) {
+      return user;
+    }
+    return null;
   }
 }
