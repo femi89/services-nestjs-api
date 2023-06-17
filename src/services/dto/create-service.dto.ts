@@ -6,5 +6,7 @@ export class CreateServiceDto {
   @ApiProperty()
   description: string;
   @ApiProperty()
-  category_id: number;
+  service_category_id: number;
+  @ApiProperty({ description: 'Image Url', required: false })
+  image: string;
 }

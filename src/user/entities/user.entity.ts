@@ -1,4 +1,13 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+  UpdateDateColumn
+} from "typeorm";
 import { Exclude } from 'class-transformer';
 import { ServiceEntity } from "../../services/entities/service.entity";
 
@@ -19,6 +28,8 @@ export class UserEntity {
   email: string;
   @Column({ nullable: true, select: false })
   token: string;
+  @OneToMany(() => ServiceEntity, (service) => service.user)
+  services: ServiceEntity[];
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
@@ -29,6 +40,7 @@ export class UserEntity {
     default: () => 'CURRENT_TIMESTAMP(6)',
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
-  @OneToMany(() => ServiceEntity, (service) => service.user)
-  services: ServiceEntity[];
+  public updated_at: Date;
+  @DeleteDateColumn({ nullable: true })
+  deletedAt: Date;
 }

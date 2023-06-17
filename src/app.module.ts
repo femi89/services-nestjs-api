@@ -10,6 +10,7 @@ import { AuthGuardGuard } from "./guards/auth-guard/auth-guard.guard";
 import * as dotenv from 'dotenv';
 import { JwtService } from "@nestjs/jwt";
 import { ServicesModule } from './services/services.module';
+import { ServiceCategoryModule } from './service-category/service-category.module';
 dotenv.config();
 @Module({
   imports: [
@@ -19,7 +20,7 @@ dotenv.config();
       host: 'localhost',
       port: 3306,
       username: 'root',
-      password: 'Falade000.',
+      password: '',
       database: 'pnp',
       entities: Entities,
       synchronize: true,
@@ -27,6 +28,7 @@ dotenv.config();
     }),
     UserModule,
     ServicesModule,
+    ServiceCategoryModule,
   ],
   controllers: [AppController],
   providers: [

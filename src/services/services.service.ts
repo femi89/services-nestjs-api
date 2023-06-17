@@ -1,10 +1,11 @@
-import { Injectable, Req } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { InjectRepository } from "@nestjs/typeorm";
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ServiceEntity } from './entities/service.entity';
-import { UserService } from "../user/user.service";
+import { UserService } from '../user/user.service';
+import { faker } from '@faker-js/faker';
 
 @Injectable()
 export class ServicesService {
@@ -12,23 +13,47 @@ export class ServicesService {
     @InjectRepository(ServiceEntity) private repo: Repository<ServiceEntity>,
     private readonly userService: UserService,
   ) {}
-  create(createServiceDto: CreateServiceDto, @Req() req?: Request) {
-    const user = this.userService.getUser(req['user']);
-    console.log(user);
-
-    return 'This action adds a new service';
+  async create(createServiceDto: CreateServiceDto, req?: Request) {
+    const user = await this.userService.getUser(req['user']);
+    const serviceObj = new ServiceEntity();
+    const sObj = Object.assign(serviceObj, createServiceDto);
+    sObj['user_id'] = user.id;
+    sObj['image'] = faker.image.fashion();
+    // sObj['service_category_id'] = user.id;
+    this.repo.create(sObj);
+    await this.repo.save(sObj);
+    return 'Service Created Successfully';
   }
 
   async findAll() {
-    return await this.repo.find();
+    return await this.repo.find({
+      relations: {
+        service_category: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} service`;
+  async findOne(id: string) {
+    return await this.repo.find({
+      where: {
+        id: id,
+      },
+      relations: {
+        service_category: true,
+      },
+    });
   }
 
-  update(id: number, updateServiceDto: UpdateServiceDto) {
-    return `This action updates a #${id} service`;
+  async update(id: string, updateServiceDto: UpdateServiceDto, req?: Request) {
+    const user = await this.userService.getUser(req['user']);
+    const serviceObj = new ServiceEntity();
+    const sObj = Object.assign(serviceObj, updateServiceDto);
+    sObj['user_id'] = user.id;
+    sObj['id'] = id;
+    // sObj['service_category_id'] = user.id;
+    this.repo.create(sObj);
+    await this.repo.save(sObj);
+    return `Service Update successfully`;
   }
 
   remove(id: number) {

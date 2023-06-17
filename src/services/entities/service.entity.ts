@@ -8,7 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from "../../user/entities/user.entity";
+import { UserEntity } from '../../user/entities/user.entity';
+import { ServiceCategoryEntities } from '../../service-category/entities/service-category.entity';
 
 @Entity('services')
 export class ServiceEntity {
@@ -26,6 +27,13 @@ export class ServiceEntity {
   })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+  @ManyToOne(() => ServiceCategoryEntities, (category) => category.services, {
+    cascade: true,
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'service_category_id' })
+  service_category: ServiceCategoryEntities;
   @CreateDateColumn({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP(6)',
